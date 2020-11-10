@@ -3,7 +3,6 @@
 #' @param drinks list or named vector of drinks
 
 #' @return possible warning message due to illegal activity
-
 checking_age <- function(age, drinks) {
   drinks <- unlist(drinks)
   age_class <- ifelse("schnaps" %in% names(drinks), "adult", "minor")
@@ -104,7 +103,8 @@ calculate_blood_alcohol_final <- function(blood_level, drinking_time) {
 }
 
 
-#' Function that calculates the blood level of alcohol after some time of drinking
+#' Function that calculates the blood level of alcohol after some time of
+#'  drinking
 #' @param age the age of the person
 #' @param sex the gender of the person
 #' @param height height in cm
