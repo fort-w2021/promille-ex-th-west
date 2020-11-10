@@ -13,16 +13,18 @@ checking_age <- function(age, drinks) {
   if (age_class == "minor" & age < 16) {
     warning("Consumption of alcohol for minors younger than 16 is illegal")
   }
-  # drinks <- match.arg(names(drinks),
-  #   choices = c("massn", "hoibe", "wein", "schnaps"), several.ok = TRUE
-  # )
-  # switch(drinks,
-  #   hoibe = "minor",
-  #   massn = "minor",
-  #   wein = "minor",
-  #   schnaps = "adult",
-  # )
 }
+
+# drinks <- match.arg(names(drinks),
+#   choices = c("massn", "hoibe", "wein", "schnaps"), several.ok = TRUE
+# )
+# switch(drinks,
+#   hoibe = "minor",
+#   massn = "minor",
+#   wein = "minor",
+#   schnaps = "adult",
+# )
+
 
 #' Function that computes the mass of alcohol in grams
 #' @param drinks a list or named vector containing  alcoholic beverages
@@ -32,6 +34,8 @@ checking_age <- function(age, drinks) {
 calculate_mass <- function(drinks) {
   mass_sum <- 0
   drinks <- unlist(drinks)
+  checkmate::assert_subset(names(drinks), choices = c("massn", "hoibe", "wein",
+                                                      "schnaps"), empty.ok = FALSE)
   alcohol_mass_list <- list(
     "hoibe" = 500 * 0.06 * 0.8,
     "massn" = 1000 * 0.06 * 0.8,
@@ -40,6 +44,7 @@ calculate_mass <- function(drinks) {
   )
 
   for (i in names(drinks)) {
+    checkmate::assert_numeric(as.vector(drinks[i]), lower = 0)
     mass_sum <- mass_sum + alcohol_mass_list[[i]] * as.vector(drinks[i])
   }
 
@@ -96,6 +101,7 @@ calculate_blood_alcohol <- function(gkw, alc_mass) {
 #' @return  final level of blood alcohol at the end of drinking time
 calculate_blood_alcohol_final <- function(blood_level, drinking_time) {
   time <- (as.numeric(drinking_time[2]) - as.numeric(drinking_time[1])) / 3600
+  checkmate::assert_numeric(time, lower = 0)
   if (time >= 1) {
     blood_level <- blood_level - ((time - 1) * 0.15)
   }
@@ -116,7 +122,14 @@ calculate_blood_alcohol_final <- function(blood_level, drinking_time) {
 #' @return the final blood level of alcohol per thousand
 tell_me_how_drunk <- function(age, sex = c("male", "female"), height, weight,
                               drinking_time, drinks) {
-  
+  checkmate::assert_numeric(age, lower = 0, upper = 120, any.missing = FALSE)
+  checkmate::assert_numeric(height, lower = 70, upper = 220, any.missing = FALSE)
+  checkmate::assert_numeric(weight, lower = 30, upper = 350, any.missing = FALSE)
+  checkmate::assert_posixct(drinking_time)
+  checkmate::assert_character(sex)
+ 
+
+
   checking_age(age = age, drinks = drinks)
   mass <- calculate_mass(drinks = drinks)
   body_water <- calculate_gkw(
