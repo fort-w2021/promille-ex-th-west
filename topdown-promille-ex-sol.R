@@ -15,17 +15,6 @@ checking_age <- function(age, drinks) {
   }
 }
 
-# drinks <- match.arg(names(drinks),
-#   choices = c("massn", "hoibe", "wein", "schnaps"), several.ok = TRUE
-# )
-# switch(drinks,
-#   hoibe = "minor",
-#   massn = "minor",
-#   wein = "minor",
-#   schnaps = "adult",
-# )
-
-
 #' Function that computes the mass of alcohol in grams
 #' @param drinks a list or named vector containing  alcoholic beverages
 #' and their count
@@ -34,8 +23,10 @@ checking_age <- function(age, drinks) {
 calculate_mass <- function(drinks) {
   mass_sum <- 0
   drinks <- unlist(drinks)
-  checkmate::assert_subset(names(drinks), choices = c("massn", "hoibe", "wein",
-                                                      "schnaps"), empty.ok = FALSE)
+  checkmate::assert_subset(names(drinks),
+                           choices = c("massn", "hoibe", "wein", "schnaps"),
+                           empty.ok = FALSE)
+  drinks <- tapply(drinks, names(drinks), sum)
   alcohol_mass_list <- list(
     "hoibe" = 500 * 0.06 * 0.8,
     "massn" = 1000 * 0.06 * 0.8,
@@ -55,7 +46,8 @@ calculate_mass <- function(drinks) {
 #' @param sex a character declaring sex of a person
 
 #' @return value female or male for sex
-getting_gender_right <- function(sex = c("male", "m", "M", "female", "f", "F")) {
+getting_gender_right <- function(sex = c("male", "m", "M",
+                                         "female", "f", "F")) {
   sex <- tolower(sex)
   sex <- match.arg(sex)
   switch(sex,
@@ -100,10 +92,11 @@ calculate_blood_alcohol <- function(gkw, alc_mass) {
 
 #' @return  final level of blood alcohol at the end of drinking time
 calculate_blood_alcohol_final <- function(blood_level, drinking_time) {
-  time <- (as.numeric(drinking_time[2]) - as.numeric(drinking_time[1])) / 3600
-  checkmate::assert_numeric(time, lower = 0)
-  if (time >= 1) {
-    blood_level <- blood_level - ((time - 1) * 0.15)
+  drinking_time <- (as.numeric(drinking_time[[2]])
+                    - as.numeric(drinking_time[[1]])) / 3600
+  checkmate::assert_numeric(drinking_time, lower = 0)
+  if (drinking_time >= 1) {
+    blood_level <- blood_level - ((drinking_time - 1) * 0.15)
   }
   max(0, blood_level)
 }
@@ -122,9 +115,12 @@ calculate_blood_alcohol_final <- function(blood_level, drinking_time) {
 #' @return the final blood level of alcohol per thousand
 tell_me_how_drunk <- function(age, sex = c("male", "female"), height, weight,
                               drinking_time, drinks) {
-  checkmate::assert_numeric(age, lower = 0, upper = 120, any.missing = FALSE)
-  checkmate::assert_numeric(height, lower = 70, upper = 220, any.missing = FALSE)
-  checkmate::assert_numeric(weight, lower = 30, upper = 350, any.missing = FALSE)
+  checkmate::assert_numeric(age, lower = 0, upper = 120,
+                            any.missing = FALSE)
+  checkmate::assert_numeric(height, lower = 0, upper = 220,
+                            any.missing = FALSE)
+  checkmate::assert_numeric(weight, lower = 0, upper = 350,
+                            any.missing = FALSE)
   checkmate::assert_posixct(drinking_time)
   checkmate::assert_character(sex)
  
